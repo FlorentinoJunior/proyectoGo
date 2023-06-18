@@ -1,41 +1,42 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"sync"
 	"github.com/FlorentinoJunior/proyectoGo.git/entities"
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
+	// Crear estudiantes y libros
+	estudiante1 := entities.NewStudent("Estudiante 1")
+	estudiante2 := entities.NewStudent("Estudiante 2")
+	libro1 := entities.NewBook("Libro 1", "Autor 1")
+	libro2 := entities.NewBook("Libro 2", "Autor 2")
 
-	// Recoge el nombre del estudiante
-	fmt.Print("Ingrese el nombre del estudiante: ")
-	nombreEstudiante, _ := reader.ReadString('\n')
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	// Recoge el nombre y autor del libro
-	fmt.Print("Ingrese el título del libro: ")
-	tituloLibro, _ := reader.ReadString('\n')
+	go func() {
+		defer wg.Done()
+		// Estudiante 1 toma prestado el libro 1
+		estudiante1.BorrowBook(libro1)
+		fmt.Printf("%s ha tomado prestado %s\n", estudiante1.Name, libro1.Title)
 
-	fmt.Print("Ingrese el autor del libro: ")
-	autorLibro, _ := reader.ReadString('\n')
+		// Estudiante 1 devuelve el libro 1
+		estudiante1.ReturnBook(libro1)
+		fmt.Printf("%s ha devuelto %s\n", estudiante1.Name, libro1.Title)
+	}()
 
-	// Crea un nuevo estudiante
-	estudiante1 := entities.NewStudent(nombreEstudiante)
+	go func() {
+		defer wg.Done()
+		// Estudiante 2 toma prestado el libro 2
+		estudiante2.BorrowBook(libro2)
+		fmt.Printf("%s ha tomado prestado %s\n", estudiante2.Name, libro2.Title)
 
-	// Crea un nuevo libro
-	libro1 := entities.NewBook(tituloLibro, autorLibro)
+		// Estudiante 2 devuelve el libro 2
+		estudiante2.ReturnBook(libro2)
+		fmt.Printf("%s ha devuelto %s\n", estudiante2.Name, libro2.Title)
+	}()
 
-	// El estudiante toma prestado el libro
-	estudiante1.BorrowBook(libro1)
-
-	// Imprime el estado del libro después de ser prestado
-	fmt.Printf("Estado del libro después de ser prestado: %s\n", libro1.Estado)
-
-	// El estudiante devuelve el libro
-	estudiante1.ReturnBook(libro1)
-
-	// Imprime el estado del libro después de ser devuelto
-	fmt.Printf("Estado del libro después de ser devuelto: %s\n", libro1.Estado)
+	wg.Wait()
 }
